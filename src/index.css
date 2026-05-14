@@ -1,0 +1,210 @@
+@import 'tailwindcss';
+
+@theme inline {
+    /* ─── Fonts ──────────────────────────────────────────── */
+    --font-sans: 'Geist', sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+
+    /* ─── Backgrounds ────────────────────────────────────── */
+    --color-bg-1: #0f1117;
+    --color-bg-2: #181c27;
+    --color-bg-3: #222840;
+    --color-bg-4: #2a2f45;
+    --color-bg-5: #323860;
+    /** Card image + footer stack (skeleton + loaded state) */
+    --color-card-surface: #20232f;
+
+    /* ─── Text ───────────────────────────────────────────── */
+    --color-ink-1: #f0f2ff;
+    --color-ink-2: #909ab8;
+    --color-ink-3: #8090b0;
+    --color-ink-4: #3a4060;
+
+    /* ─── Borders ────────────────────────────────────────── */
+    --color-line-1: rgba(42, 47, 69, 0.8);
+    --color-line-2: rgba(42, 47, 69, 1);
+    --color-line-3: rgba(77, 135, 246, 0.35);
+
+    /* ─── Blue ───────────────────────────────────────────── */
+    --color-blue-dark: #2d6be4;
+    --color-blue: #4d87f6;
+    --color-blue-link: #5a96ff;
+    --color-blue-bg: rgba(45, 107, 228, 0.12);
+    --color-blue-border: rgba(45, 107, 228, 0.3);
+
+    /* ─── Green ──────────────────────────────────────────── */
+    --color-green: #22c87a;
+    --color-green-bg: rgba(34, 200, 122, 0.1);
+    --color-green-border: rgba(34, 200, 122, 0.25);
+
+    /* ─── Gold ───────────────────────────────────────────── */
+    --color-gold: #f0a500;
+    --color-gold-bg: rgba(240, 165, 0, 0.12);
+    --color-gold-border: rgba(240, 165, 0, 0.25);
+
+    /* ─── Red ────────────────────────────────────────────── */
+    --color-red: #e84646;
+    --color-red-surface: #c43030;
+    --color-red-text: #f07070;
+    --color-red-bg: rgba(232, 70, 70, 0.1);
+    --color-red-border: rgba(232, 70, 70, 0.25);
+
+    /* ─── Orange ─────────────────────────────────────────── */
+    --color-orange: #ff9a3c;
+    --color-orange-bg: rgba(255, 154, 60, 0.1);
+    --color-orange-border: rgba(255, 154, 60, 0.22);
+
+    /* ─── Purple ─────────────────────────────────────────── */
+    --color-purple: #a78bfa;
+    --color-purple-bg: rgba(167, 139, 250, 0.12);
+    --color-purple-border: rgba(167, 139, 250, 0.22);
+
+    /* ─── Border radius ──────────────────────────────────── */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+
+    /* ─── Transitions ────────────────────────────────────── */
+    --duration-default: 200ms;
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ─── Popup layout ───────────────────────────────────── */
+    --width-popup: 400px;
+    --height-popup: 560px;
+
+    /* ─── Shared animations (used across popup states) ───── */
+    --animate-fade-up: fade-up 0.35s ease both;
+    --animate-pulse-dot: pulse-dot 2.5s ease-in-out infinite;
+    --animate-skeleton-pulse: skeleton-pulse 1.5s ease-in-out infinite;
+    --animate-slide-up: slide-up 240ms var(--ease-default) both;
+}
+
+@layer base {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        font-size: 16px;
+        background-color: var(--color-bg-1);
+    }
+
+    html,
+    body {
+        width: 100%;
+        min-width: 320px;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    body {
+        background-color: var(--color-bg-1);
+        color: var(--color-ink-1);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    #root {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+}
+
+@utility focus-ring {
+    @apply outline-none ring-2 ring-blue ring-offset-2 ring-offset-bg-1;
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-dot {
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 7px rgba(77, 135, 246, 0.5);
+    }
+    50% {
+        opacity: 0.6;
+        box-shadow: 0 0 4px rgba(77, 135, 246, 0.35);
+    }
+}
+
+@keyframes skeleton-pulse {
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes scan-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes pulse-soft {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@utility scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-2) transparent;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-line-2);
+        border-radius: var(--radius-full);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--color-bg-5);
+    }
+}
