@@ -428,21 +428,23 @@ function App() {
             onDevJumpToScanning={handleDevJumpToScanning}
             onDevJumpToComplete={handleDevJumpToComplete}
         >
-            {flow === 'detect' && (
-                <StateDetect
-                    status={detectStatus}
-                    articleCount={detectResult?.onStockPage ? detectResult.articleCount : null}
-                    onGoToCardmarket={detectStatus === 'not-logged-in' ? focusCMTab : undefined}
-                    interrupted={scanInterrupted}
-                    autoOpenCmTab={settings.autoOpenCmTab}
-                />
-            )}
-            {flow === 'scanning' && (
-                <StateScanning progress={scanProgress} startTime={scanStartTime} rateLimitSeconds={rateLimitSeconds} />
-            )}
-            {flow === 'complete' && (
-                <StateComplete articles={scanResult ?? []} elapsedSeconds={scanElapsed} savedAt={scanSavedAt} />
-            )}
+            <div key={flow === 'detect' ? `detect-${detectStatus}` : flow} className="animate-fade-up">
+                {flow === 'detect' && (
+                    <StateDetect
+                        status={detectStatus}
+                        articleCount={detectResult?.onStockPage ? detectResult.articleCount : null}
+                        onGoToCardmarket={detectStatus === 'not-logged-in' ? focusCMTab : undefined}
+                        interrupted={scanInterrupted}
+                        autoOpenCmTab={settings.autoOpenCmTab}
+                    />
+                )}
+                {flow === 'scanning' && (
+                    <StateScanning progress={scanProgress} startTime={scanStartTime} rateLimitSeconds={rateLimitSeconds} />
+                )}
+                {flow === 'complete' && (
+                    <StateComplete articles={scanResult ?? []} elapsedSeconds={scanElapsed} savedAt={scanSavedAt} />
+                )}
+            </div>
         </PopupShell>
     );
 }

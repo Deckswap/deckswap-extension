@@ -69,7 +69,7 @@ export function StateComplete({ articles, elapsedSeconds, savedAt }: Props) {
             />
 
             {/* Success hero */}
-            <div className="relative bg-green-bg border border-green-border rounded-lg px-[18px] py-[22px] mb-3.5 text-center overflow-hidden">
+            <div className="relative bg-green-bg border border-green-border rounded-lg px-[18px] py-[22px] mb-3.5 text-center overflow-hidden animate-scale-in">
                 <div
                     aria-hidden
                     className="absolute inset-0 pointer-events-none"
@@ -105,11 +105,13 @@ export function StateComplete({ articles, elapsedSeconds, savedAt }: Props) {
                     value={articles.length.toLocaleString('en')}
                     tone="green"
                     label="Articles"
+                    className="animate-fade-up [animation-delay:0.1s]"
                 />
                 <Stat
                     value={formatEur(totalValue)}
                     tone="gold"
                     label="Total value"
+                    className="animate-fade-up [animation-delay:0.18s]"
                 />
             </div>
         </>
@@ -122,16 +124,18 @@ function Stat({
     value,
     label,
     tone,
+    className,
 }: {
     value: string;
     label: string;
     tone?: 'green' | 'gold';
+    className?: string;
 }) {
     const toneClass =
         tone === 'green' ? 'text-green' : tone === 'gold' ? 'text-gold' : 'text-ink-1';
 
     return (
-        <div className="p-3 bg-bg-2 border border-line-2 rounded-md">
+        <div className={['p-3 bg-bg-2 border border-line-2 rounded-md', className].filter(Boolean).join(' ')}>
             <div
                 className={[
                     'font-mono text-[18px] font-semibold leading-none mb-1 tracking-[-0.01em]',

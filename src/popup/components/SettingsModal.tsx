@@ -67,14 +67,14 @@ export function SettingsModal({
             <button
                 aria-label="Close settings"
                 onClick={onClose}
-                className="fixed inset-0 z-40 bg-bg-1/70 backdrop-blur-sm cursor-default"
+                className="fixed inset-0 z-40 bg-bg-1/70 backdrop-blur-sm cursor-default animate-fade-in"
             />
 
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-label="Settings"
-                className="fixed inset-0 z-50 m-3 bg-bg-2 border border-line-2 rounded-xl shadow-2xl flex flex-col overflow-hidden pointer-events-none"
+                className="fixed inset-0 z-50 m-3 bg-bg-2 border border-line-2 rounded-xl shadow-2xl flex flex-col overflow-hidden pointer-events-none animate-fade-up"
             >
                 <div className="flex flex-col h-full pointer-events-auto">
                     {/* Header */}

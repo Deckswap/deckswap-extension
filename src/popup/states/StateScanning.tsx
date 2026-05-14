@@ -211,8 +211,11 @@ export function StateScanning({ progress, startTime, rateLimitSeconds }: Props) 
                             const tone = conditionTone(item.condition);
                             return (
                                 <div
-                                    key={i}
-                                    className="flex items-center gap-2 px-2.5 py-1.5 bg-bg-2 border border-line-1 rounded-md"
+                                    key={`${item.name}-${item.language}-${item.condition}-${item.price}`}
+                                    className={[
+                                        'flex items-center gap-2 px-2.5 py-1.5 bg-bg-2 border border-line-1 rounded-md',
+                                        i === 0 ? 'animate-slide-down' : '',
+                                    ].join(' ')}
                                     style={{ opacity: 1 - i * 0.25 }}
                                 >
                                     <span className="w-[18px] h-6 rounded-sm bg-gradient-to-br from-bg-4 to-bg-5 border border-line-2 flex-shrink-0" />
