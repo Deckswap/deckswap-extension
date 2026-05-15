@@ -25,6 +25,6 @@
     "side_panel": {
         "default_path": "index.html"
     },
-    "permissions": ["activeTab", "notifications", "scripting", "sidePanel", "storage", "tabs", "unlimitedStorage"],
+    "permissions": ["notifications", "scripting", "sidePanel", "storage", "tabs", "unlimitedStorage"],
     "host_permissions": ["https://www.cardmarket.com/*"]
 }

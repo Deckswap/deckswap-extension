@@ -75,14 +75,14 @@ export function inlineScan(params: {
         if (!VALID_LOCALES.includes(locale)) return [];
 
         let page = params.resumeFrom ?? 1;
-        const articles: ReturnType<typeof parseRow>[] = [];
+        const articles: NonNullable<ReturnType<typeof parseRow>>[] = [];
         const seen = new Set<string>();
         let totalPages: number | null = null;
         let simulatedRateLimit = false;
 
         if (page > 1) {
             const stored = await chrome.storage.local.get(checkpointKey);
-            const cp = stored[checkpointKey];
+            const cp = stored[checkpointKey] as { locale: string; articles: NonNullable<ReturnType<typeof parseRow>>[]; totalPages: number | null } | undefined;
             if (cp?.locale === locale && Array.isArray(cp.articles)) {
                 for (const a of cp.articles) {
                     articles.push(a);
@@ -108,7 +108,7 @@ export function inlineScan(params: {
                 for (let s = RATE_LIMIT_WAIT_S; s > 0; s--) {
                     w.__deckswap_rateLimit = s;
                     await sleep(1000);
-                    if (w.__deckswap_cancel) return articles.filter(Boolean);
+                    if (w.__deckswap_cancel) return articles as unknown as Record<string, unknown>[];
                 }
                 w.__deckswap_rateLimit = 0;
                 continue;
@@ -154,7 +154,7 @@ export function inlineScan(params: {
                         for (let s = RATE_LIMIT_WAIT_S; s > 0; s--) {
                             w.__deckswap_rateLimit = s;
                             await sleep(1000);
-                            if (w.__deckswap_cancel) return articles.filter(Boolean);
+                            if (w.__deckswap_cancel) return articles as unknown as Record<string, unknown>[];
                         }
                         w.__deckswap_rateLimit = 0;
                     }
@@ -179,6 +179,6 @@ export function inlineScan(params: {
         }
 
         await chrome.storage.local.remove(checkpointKey);
-        return articles.filter(Boolean);
+        return articles as unknown as Record<string, unknown>[];
     })();
 }

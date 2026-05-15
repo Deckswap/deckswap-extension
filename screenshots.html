@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>Deckswap Importer — Screenshots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-1:#0f1117; --bg-2:#181c27; --bg-3:#222840; --bg-4:#2a2f45; --bg-5:#323860;
+  --ink-1:#f0f2ff; --ink-2:#909ab8; --ink-3:#8090b0; --ink-4:#3a4060;
+  --line-1:rgba(42,47,69,0.8); --line-2:rgba(42,47,69,1);
+  --blue-dark:#2d6be4; --blue:#4d87f6;
+  --blue-bg:rgba(45,107,228,0.12); --blue-border:rgba(45,107,228,0.3);
+  --green:#22c87a; --green-bg:rgba(34,200,122,0.1); --green-border:rgba(34,200,122,0.25);
+  --gold:#f0a500; --gold-bg:rgba(240,165,0,0.12); --gold-border:rgba(240,165,0,0.25);
+  --red:#e84646; --red-text:#f07070; --red-bg:rgba(232,70,70,0.1); --red-border:rgba(232,70,70,0.25);
+  font-family:'Geist',sans-serif;
+}
+
+html, body { width:1280px; height:800px; overflow:hidden; background:var(--bg-1); }
+
+/* ── Canvas ── */
+.screen {
+  display: none;
+  width: 1280px;
+  height: 800px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: #0b0d13;
+}
+.screen.active { display: flex; }
+
+/* Ambient glow behind panel */
+.screen::before {
+  content: '';
+  position: absolute;
+  width: 700px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(45,107,228,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Extension panel card ── */
+.ext-panel {
+  width: 400px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(42,47,69,0.9);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  background: var(--bg-1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+.ext-radial {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 360px 200px at 70% -40px, rgba(45,107,228,0.10) 0%, transparent 65%);
+  border-radius: 14px;
+}
+
+/* ── Header ── */
+.ext-header {
+  display: flex; align-items: center;
+  padding: 0 16px; height: 52px;
+  border-bottom: 1px solid var(--line-1);
+  background: rgba(15,17,23,0.6);
+  flex-shrink: 0; position: relative; z-index: 1;
+}
+.ext-logo-dot { width:7px; height:7px; border-radius:50%; background:var(--blue-dark); margin-right:8px; flex-shrink:0; }
+.ext-logo-text { font-size:17px; font-weight:700; letter-spacing:-0.03em; color:var(--ink-1); }
+.ext-version { font-family:'Geist Mono',monospace; font-size:10.5px; font-weight:600; color:var(--ink-3); letter-spacing:0.10em; text-transform:uppercase; padding:2px 7px; border-radius:4px; background:var(--bg-3); border:1px solid var(--line-2); margin-left:8px; }
+.ext-header-icons { margin-left:auto; display:flex; gap:1px; }
+.icon-btn { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:4px; color:var(--ink-3); }
+
+/* ── Connection strip ── */
+.ext-conn {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 16px;
+  border-bottom:1px solid var(--line-1);
+  background:var(--bg-2);
+  flex-shrink:0; position:relative; z-index:1;
+}
+.conn-avatar { width:27px; height:27px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Geist Mono',monospace; font-size:11px; font-weight:700; flex-shrink:0; border:1px solid; }
+.conn-avatar-cm { background:var(--bg-3); border-color:var(--line-2); color:var(--ink-2); }
+.conn-avatar-ds { background:var(--blue-bg); border-color:var(--blue-border); color:var(--blue); }
+.conn-info { display:flex; flex-direction:column; line-height:1.3; min-width:0; flex:1; }
+.conn-label { font-family:'Geist Mono',monospace; font-size:9.5px; font-weight:600; letter-spacing:0.10em; text-transform:uppercase; color:var(--ink-3); }
+.conn-user { font-size:12.5px; font-weight:600; color:var(--ink-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.conn-arrow { color:var(--ink-3); flex-shrink:0; }
+.conn-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
+.conn-dot-on { background:var(--green); box-shadow:0 0 8px rgba(34,200,122,0.6); }
+
+/* ── Body / Footer ── */
+.ext-body { flex:1; padding:18px; position:relative; z-index:1; overflow:hidden; }
+.ext-footer { padding:12px 16px; border-top:1px solid var(--line-1); background:rgba(15,17,23,0.5); flex-shrink:0; position:relative; z-index:1; display:flex; align-items:center; gap:8px; }
+.ext-footer.stack { flex-direction:column; align-items:stretch; gap:6px; }
+
+/* ── Buttons ── */
+.btn { display:flex; align-items:center; justify-content:center; gap:7px; height:38px; padding:0 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:default; border:1px solid transparent; white-space:nowrap; font-family:'Geist',sans-serif; }
+.btn-primary { background:var(--blue-dark); color:white; border-color:var(--blue-dark); }
+.btn-ghost { background:transparent; color:var(--ink-2); border-color:var(--line-2); }
+.btn-blue-ghost { background:var(--blue-bg); color:var(--blue); border-color:var(--blue-border); }
+.btn-block { width:100%; }
+
+/* ── StepStrip ── */
+.step-strip { display:flex; margin-bottom:14px; background:var(--bg-2); border:1px solid var(--line-2); border-radius:8px; overflow:hidden; }
+.step { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:8px 4px; font-size:10.5px; font-weight:600; color:var(--ink-3); position:relative; }
+.step:not(:last-child)::after { content:''; position:absolute; right:0; top:25%; height:50%; width:1px; background:var(--line-2); }
+.step.done { color:var(--green); }
+.step.active { color:var(--blue); background:var(--blue-bg); }
+.step-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.step.done .step-dot { background:var(--green); }
+.step.active .step-dot { background:var(--blue); }
+.step.pending .step-dot { background:var(--ink-4); }
+
+/* ── Stat tiles ── */
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.stat-tile { padding:12px; background:var(--bg-2); border:1px solid var(--line-2); border-radius:8px; }
+.stat-val { font-family:'Geist Mono',monospace; font-size:18px; font-weight:600; line-height:1; margin-bottom:4px; letter-spacing:-0.01em; }
+.stat-lbl { font-family:'Geist Mono',monospace; font-size:8.5px; font-weight:600; letter-spacing:0.10em; text-transform:uppercase; color:var(--ink-3); }
+.c-green{color:var(--green);} .c-gold{color:var(--gold);} .c-ink1{color:var(--ink-1);} .c-ink3{color:var(--ink-3);}
+
+/* ── Mini stats ── */
+.mini-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.mini-tile { display:flex; flex-direction:column; align-items:center; padding:6px 4px; background:var(--bg-3); border-radius:6px; }
+.mini-val { font-family:'Geist Mono',monospace; font-size:13px; font-weight:600; line-height:1; }
+.mini-lbl { font-family:'Geist Mono',monospace; font-size:7.5px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); margin-top:3px; }
+
+/* ── Mode selector ── */
+.mode-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; }
+.mode-btn { padding:8px; border-radius:8px; font-size:11px; font-weight:600; border:1px solid; text-align:center; font-family:'Geist',sans-serif; }
+.mode-active { background:var(--blue); border-color:var(--blue); color:white; }
+.mode-inactive { background:var(--bg-2); border-color:var(--line-2); color:var(--ink-2); }
+.mode-desc { font-size:11px; color:var(--ink-3); line-height:1.5; }
+
+/* ── Labels ── */
+.section-lbl { font-family:'Geist Mono',monospace; font-size:8.5px; font-weight:600; letter-spacing:0.10em; text-transform:uppercase; color:var(--ink-3); margin-bottom:8px; }
+.kicker { font-family:'Geist Mono',monospace; font-size:10px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; display:block; text-align:center; margin-bottom:12px; }
+
+/* ── Success hero ── */
+.success-hero { position:relative; background:var(--green-bg); border:1px solid var(--green-border); border-radius:10px; padding:20px 18px; margin-bottom:12px; text-align:center; overflow:hidden; }
+.success-glow { position:absolute; inset:0; background:radial-gradient(ellipse 300px 180px at 50% 0%,rgba(34,200,122,0.18) 0%,transparent 70%); pointer-events:none; }
+.success-check { width:44px; height:44px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; margin:0 auto 10px; box-shadow:0 0 30px rgba(34,200,122,0.5); position:relative; }
+.success-title { font-size:17px; font-weight:700; letter-spacing:-0.02em; color:var(--ink-1); margin-bottom:4px; position:relative; }
+.success-count { font-family:'Geist Mono',monospace; font-size:11px; font-weight:600; color:var(--green); letter-spacing:0.06em; position:relative; }
+
+/* ── Progress box ── */
+.progress-box { background:var(--bg-2); border:1px solid var(--line-2); border-radius:10px; padding:16px; margin-bottom:12px; position:relative; overflow:hidden; }
+.progress-shimmer { position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(45,107,228,0.06),transparent); background-size:200% 100%; pointer-events:none; }
+.progress-top { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px; }
+.progress-nums { display:flex; align-items:baseline; gap:6px; }
+.progress-big { font-family:'Geist Mono',monospace; font-size:28px; font-weight:600; color:var(--ink-1); letter-spacing:-0.02em; line-height:1; }
+.progress-slash { font-family:'Geist Mono',monospace; font-size:18px; color:var(--ink-3); line-height:1; }
+.progress-total { font-family:'Geist Mono',monospace; font-size:16px; color:var(--ink-2); line-height:1; }
+.progress-pct { font-family:'Geist Mono',monospace; font-size:13px; font-weight:600; color:var(--blue); padding:3px 10px; background:var(--blue-bg); border:1px solid var(--blue-border); border-radius:999px; }
+.progress-bar-wrap { height:6px; background:var(--bg-4); border-radius:999px; overflow:hidden; margin-bottom:12px; }
+.progress-bar { height:100%; border-radius:999px; background:linear-gradient(90deg,#2d6be4 0%,#4d87f6 100%); box-shadow:0 0 10px rgba(45,107,228,0.4); }
+.progress-meta { display:flex; gap:14px; font-family:'Geist Mono',monospace; font-size:10px; font-weight:600; color:var(--ink-3); letter-spacing:0.06em; align-items:center; }
+.progress-meta strong { color:var(--ink-1); font-weight:600; }
+.meta-dot { width:3px; height:3px; border-radius:50%; background:var(--ink-3); flex-shrink:0; }
+
+/* ── Scanning status ── */
+.scan-status { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg-3); border:1px solid var(--line-2); border-radius:8px; margin-bottom:12px; }
+.spin { width:14px; height:14px; border-radius:50%; border:1.5px solid var(--bg-4); border-top-color:var(--blue); animation:spin 1s linear infinite; flex-shrink:0; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.scan-status-text { font-size:12px; color:var(--ink-2); font-weight:500; }
+.scan-status-text strong { color:var(--ink-1); }
+
+/* ── Ticker ── */
+.ticker-header { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.ticker-dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+.ticker-lbl { font-family:'Geist Mono',monospace; font-size:10px; font-weight:600; letter-spacing:0.10em; text-transform:uppercase; color:var(--ink-3); }
+.ticker-rows { display:flex; flex-direction:column; gap:4px; }
+.ticker-item { display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--bg-2); border:1px solid var(--line-1); border-radius:6px; }
+.ticker-card { width:18px; height:24px; background:linear-gradient(135deg,var(--bg-4),var(--bg-5)); border:1px solid var(--line-2); border-radius:3px; flex-shrink:0; }
+.ticker-name { font-size:11px; font-weight:500; color:var(--ink-1); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.badge { font-family:'Geist Mono',monospace; font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; border:1px solid; flex-shrink:0; }
+.b-rh { background:var(--blue-bg); color:var(--blue); border-color:var(--blue-border); }
+.b-lang { color:var(--ink-3); border:none; padding:0; }
+.b-nm { background:var(--green-bg); color:var(--green); border-color:var(--green-border); }
+.b-ex { background:var(--gold-bg); color:var(--gold); border-color:var(--gold-border); }
+.ticker-price { font-family:'Geist Mono',monospace; font-size:10px; font-weight:600; color:var(--gold); flex-shrink:0; }
+
+/* ── Stock panel ── */
+.stock-panel { background:var(--bg-2); border:1px solid var(--line-2); border-radius:8px; padding:12px; margin-bottom:12px; }
+.stock-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px; }
+.stock-synced { font-family:'Geist Mono',monospace; font-size:9px; color:var(--ink-3); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════
+     1 — DETECT
+     ══════════════════════════ -->
+<div id="screen-detect" class="screen">
+  <div class="ext-panel">
+    <div class="ext-radial"></div>
+    <div class="ext-header">
+      <div class="ext-logo-dot"></div>
+      <span class="ext-logo-text">Deckswap</span>
+      <span class="ext-version">v0.1.0</span>
+      <div class="ext-header-icons">
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      </div>
+    </div>
+    <div class="ext-conn">
+      <div class="conn-avatar conn-avatar-cm">CM</div>
+      <div class="conn-info"><span class="conn-label">Cardmarket</span><span class="conn-user">@SalesPerson_NL</span></div>
+      <svg class="conn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <div class="conn-avatar conn-avatar-ds">DS</div>
+      <div class="conn-info"><span class="conn-label">Deckswap</span><span class="conn-user">Stephen</span></div>
+      <div class="conn-dot conn-dot-on"></div>
+    </div>
+    <div class="ext-body" style="display:flex;flex-direction:column;justify-content:center;min-height:240px;">
+      <span class="kicker c-green">Pokémon stock detected</span>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;color:var(--ink-1);text-align:center;margin-bottom:8px;">354 articles ready</div>
+      <p style="font-size:13px;line-height:1.6;color:var(--ink-3);max-width:270px;margin:0 auto;text-align:center;">We'll import everything as drafts on Deckswap. Nothing goes live until you review it.</p>
+    </div>
+    <div class="ext-footer">
+      <button class="btn btn-primary btn-block">
+        Start import
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     2 — SCANNING
+     ══════════════════════════ -->
+<div id="screen-scanning" class="screen">
+  <div class="ext-panel">
+    <div class="ext-radial"></div>
+    <div class="ext-header">
+      <div class="ext-logo-dot"></div>
+      <span class="ext-logo-text">Deckswap</span>
+      <span class="ext-version">v0.1.0</span>
+      <div class="ext-header-icons">
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      </div>
+    </div>
+    <div class="ext-conn">
+      <div class="conn-avatar conn-avatar-cm">CM</div>
+      <div class="conn-info"><span class="conn-label">Cardmarket</span><span class="conn-user">@SalesPerson_NL</span></div>
+      <svg class="conn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <div class="conn-avatar conn-avatar-ds">DS</div>
+      <div class="conn-info"><span class="conn-label">Deckswap</span><span class="conn-user">Stephen</span></div>
+      <div class="conn-dot conn-dot-on"></div>
+    </div>
+    <div class="ext-body">
+      <div class="step-strip">
+        <div class="step done"><div class="step-dot"></div>Detect</div>
+        <div class="step active"><div class="step-dot"></div>Scan</div>
+        <div class="step pending"><div class="step-dot"></div>Push</div>
+      </div>
+      <div style="font-family:'Geist Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">Scanning · Step 2 of 3</div>
+      <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em;color:var(--ink-1);margin-bottom:6px;line-height:1.25;">Reading your Cardmarket stock</div>
+      <p style="font-size:13px;color:var(--ink-3);line-height:1.6;margin-bottom:18px;">Keep this side panel open while scanning.</p>
+      <div class="progress-box">
+        <div class="progress-shimmer"></div>
+        <div style="position:relative;">
+          <div class="progress-top">
+            <div class="progress-nums">
+              <span class="progress-big">183</span>
+              <span class="progress-slash">/</span>
+              <span class="progress-total">354</span>
+            </div>
+            <span class="progress-pct">52%</span>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:52%"></div></div>
+          <div class="progress-meta">
+            <span>Elapsed <strong>1m 34s</strong></span>
+            <div class="meta-dot"></div>
+            <span>ETA <strong>~1m 27s</strong></span>
+            <div class="meta-dot"></div>
+            <span><strong>5</strong>/9 pages</span>
+          </div>
+        </div>
+      </div>
+      <div class="scan-status">
+        <div class="spin"></div>
+        <span class="scan-status-text">Reading <strong>page 5 of 9</strong></span>
+      </div>
+      <div class="ticker-header">
+        <div class="ticker-dot"></div>
+        <span class="ticker-lbl">Recently scanned</span>
+      </div>
+      <div class="ticker-rows">
+        <div class="ticker-item">
+          <div class="ticker-card"></div>
+          <span class="ticker-name">Mew VMAX (Alt Art)</span>
+          <span class="b-lang badge">EN</span>
+          <span class="b-nm badge">NM</span>
+          <span class="ticker-price">€52.00</span>
+        </div>
+        <div class="ticker-item" style="opacity:0.72;">
+          <div class="ticker-card"></div>
+          <span class="ticker-name">Umbreon VMAX (Alt Art)</span>
+          <span class="b-rh badge">RH</span>
+          <span class="b-lang badge">EN</span>
+          <span class="b-nm badge">NM</span>
+          <span class="ticker-price">€45.00</span>
+        </div>
+        <div class="ticker-item" style="opacity:0.45;">
+          <div class="ticker-card"></div>
+          <span class="ticker-name">Leafeon VMAX (Alt Art)</span>
+          <span class="b-lang badge">EN</span>
+          <span class="b-ex badge">EX</span>
+          <span class="ticker-price">€38.00</span>
+        </div>
+      </div>
+    </div>
+    <div class="ext-footer">
+      <span style="font-family:'Geist Mono',monospace;font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:0.04em;margin-right:auto;"><strong style="color:var(--ink-1);">183</strong> scanned</span>
+      <button class="btn" style="color:#f07070;border:none;background:none;font-weight:600;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     3 — COMPLETE (pre-push)
+     ══════════════════════════ -->
+<div id="screen-complete" class="screen">
+  <div class="ext-panel">
+    <div class="ext-radial"></div>
+    <div class="ext-header">
+      <div class="ext-logo-dot"></div>
+      <span class="ext-logo-text">Deckswap</span>
+      <span class="ext-version">v0.1.0</span>
+      <div class="ext-header-icons">
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      </div>
+    </div>
+    <div class="ext-conn">
+      <div class="conn-avatar conn-avatar-cm">CM</div>
+      <div class="conn-info"><span class="conn-label">Cardmarket</span><span class="conn-user">@SalesPerson_NL</span></div>
+      <svg class="conn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <div class="conn-avatar conn-avatar-ds">DS</div>
+      <div class="conn-info"><span class="conn-label">Deckswap</span><span class="conn-user">Stephen</span></div>
+      <div class="conn-dot conn-dot-on"></div>
+    </div>
+    <div class="ext-body">
+      <div class="step-strip">
+        <div class="step done"><div class="step-dot"></div>Detect</div>
+        <div class="step done"><div class="step-dot"></div>Scan</div>
+        <div class="step active"><div class="step-dot"></div>Push</div>
+      </div>
+      <div class="success-hero">
+        <div class="success-glow"></div>
+        <div class="success-check"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f1117" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="success-title">All done — 3 minutes 12 seconds</div>
+        <div class="success-count">354 ARTICLES SCANNED</div>
+      </div>
+      <div class="stat-grid" style="margin-bottom:12px;">
+        <div class="stat-tile"><div class="stat-val c-green">354</div><div class="stat-lbl">Articles</div></div>
+        <div class="stat-tile"><div class="stat-val c-gold">€2,841</div><div class="stat-lbl">Total value</div></div>
+      </div>
+      <div class="stock-panel">
+        <div class="stock-header">
+          <span class="section-lbl">Imported stock</span>
+          <span class="stock-synced">Last synced 2 days ago</span>
+        </div>
+        <div class="mini-grid">
+          <div class="mini-tile"><span class="mini-val c-ink1">289</span><span class="mini-lbl">Draft</span></div>
+          <div class="mini-tile"><span class="mini-val c-green">18</span><span class="mini-lbl">Active</span></div>
+          <div class="mini-tile"><span class="mini-val c-gold">6</span><span class="mini-lbl">Sold</span></div>
+          <div class="mini-tile"><span class="mini-val c-ink3">41</span><span class="mini-lbl">Removed</span></div>
+        </div>
+      </div>
+      <div class="section-lbl">Mode</div>
+      <div class="mode-grid">
+        <div class="mode-btn mode-active">Sync</div>
+        <div class="mode-btn mode-inactive">Add</div>
+      </div>
+      <p class="mode-desc">Updates your 289 existing drafts with new prices &amp; quantities, removes any no longer on Cardmarket, and creates new ones. Active listings are never touched.</p>
+    </div>
+    <div class="ext-footer stack">
+      <button class="btn btn-primary btn-block">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        Sync 354 articles with Deckswap
+      </button>
+      <button class="btn btn-ghost btn-block">Scan again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     4 — PUSHED (results)
+     ══════════════════════════ -->
+<div id="screen-pushed" class="screen">
+  <div class="ext-panel">
+    <div class="ext-radial"></div>
+    <div class="ext-header">
+      <div class="ext-logo-dot"></div>
+      <span class="ext-logo-text">Deckswap</span>
+      <span class="ext-version">v0.1.0</span>
+      <div class="ext-header-icons">
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+      </div>
+    </div>
+    <div class="ext-conn">
+      <div class="conn-avatar conn-avatar-cm">CM</div>
+      <div class="conn-info"><span class="conn-label">Cardmarket</span><span class="conn-user">@SalesPerson_NL</span></div>
+      <svg class="conn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <div class="conn-avatar conn-avatar-ds">DS</div>
+      <div class="conn-info"><span class="conn-label">Deckswap</span><span class="conn-user">Stephen</span></div>
+      <div class="conn-dot conn-dot-on"></div>
+    </div>
+    <div class="ext-body">
+      <div class="step-strip">
+        <div class="step done"><div class="step-dot"></div>Detect</div>
+        <div class="step done"><div class="step-dot"></div>Scan</div>
+        <div class="step active"><div class="step-dot"></div>Push</div>
+      </div>
+      <div class="success-hero">
+        <div class="success-glow"></div>
+        <div class="success-check"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f1117" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="success-title">All done — 3 minutes 12 seconds</div>
+        <div class="success-count">354 ARTICLES SCANNED</div>
+      </div>
+      <div class="stat-grid" style="margin-bottom:12px;">
+        <div class="stat-tile"><div class="stat-val c-green">301</div><div class="stat-lbl">Imported</div></div>
+        <div class="stat-tile"><div class="stat-val c-ink1">53</div><div class="stat-lbl">Updated</div></div>
+        <div class="stat-tile"><div class="stat-val c-ink1">0</div><div class="stat-lbl">Removed</div></div>
+        <div class="stat-tile"><div class="stat-val c-ink1">0</div><div class="stat-lbl">Unmatched</div></div>
+      </div>
+      <p style="font-size:12px;color:var(--ink-3);line-height:1.6;margin-top:4px;">Your Deckswap stock is now in sync with Cardmarket. 301 new draft listings created, 53 existing drafts updated.</p>
+    </div>
+    <div class="ext-footer stack">
+      <button class="btn btn-blue-ghost btn-block">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View drafts on Deckswap
+      </button>
+      <button class="btn btn-ghost btn-block">Scan again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function show() {
+  var hash = location.hash || '#detect';
+  document.querySelectorAll('.screen').forEach(function(s) { s.style.display = 'none'; });
+  var el = document.getElementById('screen-' + hash.slice(1));
+  if (el) el.style.display = 'flex';
+  else document.getElementById('screen-detect').style.display = 'flex';
+}
+show();
+window.addEventListener('hashchange', show);
+</script>
+</body>
+</html>

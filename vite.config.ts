@@ -9,13 +9,17 @@ export default defineConfig(({ mode }) => {
 
     const supabaseUrl = env.VITE_SUPABASE_URL;
     const apiUrl = env.VITE_DECKSWAP_API_URL;
+    const appUrl = env.VITE_DECKSWAP_APP_URL;
 
     if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL is not set');
     if (!apiUrl) throw new Error('VITE_DECKSWAP_API_URL is not set');
+    if (!appUrl) throw new Error('VITE_DECKSWAP_APP_URL is not set');
 
     if (mode === 'production') {
         if (!apiUrl.startsWith('https://'))
             throw new Error('VITE_DECKSWAP_API_URL must use HTTPS in production');
+        if (!appUrl.startsWith('https://'))
+            throw new Error('VITE_DECKSWAP_APP_URL must use HTTPS in production');
         if (env.VITE_DEV_TOOLS === 'true')
             throw new Error('VITE_DEV_TOOLS must be false in production');
     }

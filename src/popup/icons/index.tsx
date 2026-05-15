@@ -42,6 +42,14 @@ export function ChevronRightIcon({ size = 14, className }: IconProps) {
     );
 }
 
+export function ChevronDownIcon({ size = 14, className }: IconProps) {
+    return (
+        <svg {...base(size, className)} strokeWidth={2.5}>
+            <polyline points="6 9 12 15 18 9" />
+        </svg>
+    );
+}
+
 export function HelpIcon({ size = 14, className }: IconProps) {
     return (
         <svg {...base(size, className)}>

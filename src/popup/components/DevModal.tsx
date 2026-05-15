@@ -125,7 +125,6 @@ export function DevModal({
                                     checked={devOptions.simulateRateLimit}
                                     onChange={(v) => update({ simulateRateLimit: v })}
                                     label="Simulate rate limit"
-                                    description="Fires a 10s 429 countdown after the first article"
                                 />
                             </div>
                         </section>

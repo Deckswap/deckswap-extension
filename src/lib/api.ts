@@ -83,15 +83,54 @@ export type Profile = {
     createdAt: string;
 };
 
+const PROFILE_CACHE_KEY = 'deckswap_profile';
+
 export async function getProfile(): Promise<Profile> {
-    return apiFetch<Profile>('/profile/me');
+    const cached = await chrome.storage.local.get(PROFILE_CACHE_KEY);
+    if (cached[PROFILE_CACHE_KEY]) return cached[PROFILE_CACHE_KEY] as Profile;
+
+    const profile = await apiFetch<Profile>('/profile/me');
+    await chrome.storage.local.set({ [PROFILE_CACHE_KEY]: profile });
+    return profile;
+}
+
+export async function clearProfileCache(): Promise<void> {
+    await chrome.storage.local.remove(PROFILE_CACHE_KEY);
+}
+
+export type ImportMode = 'ADD' | 'SYNC';
+
+export interface ImportCardmarketResult {
+    batchId: string;
+    imported: number;
+    updated: number;
+    deleted: number;
+    skipped: number;
+    unmatched: number;
+    unmatchedArticles: Array<{ name: string; reason: string }>;
+}
+
+export interface LatestBatchResult {
+    id: string;
+    mode: ImportMode;
+    articleCount: number;
+    importedAt: string;
+    draft: number;
+    active: number;
+    soldOut: number;
+    deleted: number;
 }
 
 export async function importCardmarket(
     articles: unknown[],
-): Promise<{ received: number }> {
-    return apiFetch<{ received: number }>('/import/cardmarket', {
+    mode: ImportMode,
+): Promise<ImportCardmarketResult> {
+    return apiFetch<ImportCardmarketResult>('/import/cardmarket', {
         method: 'POST',
-        body: { articles },
+        body: { articles, mode },
     });
+}
+
+export async function getLatestImportBatch(): Promise<LatestBatchResult | null> {
+    return apiFetch<LatestBatchResult | null>('/import/cardmarket/latest');
 }

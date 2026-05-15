@@ -1,7 +1,16 @@
 // src/App.tsx
 
 import { useEffect, useRef, useState } from 'react';
-import { getProfile, importCardmarket, type Profile } from './lib/api';
+import {
+    clearProfileCache,
+    getLatestImportBatch,
+    getProfile,
+    importCardmarket,
+    type ImportCardmarketResult,
+    type ImportMode,
+    type LatestBatchResult,
+    type Profile,
+} from './lib/api';
 import { AuthError, isAuthenticated, signIn, signOut } from './lib/auth';
 import { findCMTab, focusCMTab } from './lib/cmTab';
 import { DEV_DEFAULTS, DEV_TOOLS, FAKE_ARTICLES, type DevOptions } from './lib/dev';
@@ -51,6 +60,9 @@ function App() {
     const [rateLimitSeconds, setRateLimitSeconds] = useState(0);
     const [checkpoint, setCheckpoint] = useState<Checkpoint | null>(null);
     const [pushState, setPushState] = useState<PushState>('idle');
+    const [importMode, setImportMode] = useState<ImportMode>('SYNC');
+    const [importResult, setImportResult] = useState<ImportCardmarketResult | null>(null);
+    const [latestBatch, setLatestBatch] = useState<LatestBatchResult | null | 'loading'>('loading');
 
     const scanStartRef = useRef(0);
     const scanTabRef = useRef<number | null>(null);
@@ -66,8 +78,8 @@ function App() {
 
     const restoreCheckpoint = async () => {
         const stored = await chrome.storage.local.get(CHECKPOINT_KEY);
-        const cp = stored[CHECKPOINT_KEY];
-        if (cp?.page > 1) {
+        const cp = stored[CHECKPOINT_KEY] as Checkpoint | undefined;
+        if (cp && cp.page > 1) {
             setCheckpoint({ page: cp.page, totalPages: cp.totalPages ?? null, articleCount: cp.articleCount ?? 0 });
         }
     };
@@ -82,7 +94,7 @@ function App() {
             chrome.storage.local.get(SCAN_RESULT_KEY),
         ]).then(([auth, stored]) => {
             if (auth) {
-                const saved = stored[SCAN_RESULT_KEY];
+                const saved = stored[SCAN_RESULT_KEY] as { articles: ScannedArticle[]; elapsedSeconds?: number; savedAt?: number } | undefined;
                 if (Array.isArray(saved?.articles) && saved.articles.length > 0) {
                     setScanResult(saved.articles);
                     setScanElapsed(saved.elapsedSeconds ?? 0);
@@ -154,7 +166,7 @@ function App() {
 
                 if (result?.onStockPage) {
                     const stored = await chrome.storage.local.get(CHECKPOINT_KEY);
-                    const cp = stored[CHECKPOINT_KEY];
+                    const cp = stored[CHECKPOINT_KEY] as (Checkpoint & { locale: string }) | undefined;
                     setCheckpoint(
                         cp?.locale === result.locale && cp.page > 1
                             ? { page: cp.page, totalPages: cp.totalPages ?? null, articleCount: cp.articleCount ?? 0 }
@@ -182,6 +194,19 @@ function App() {
         }
     }, [flow, detectResult]);
 
+    useEffect(() => {
+        if (flow !== 'complete') return;
+        setLatestBatch('loading');
+        (async () => {
+            try {
+                const batch = await getLatestImportBatch();
+                setLatestBatch(batch);
+            } catch {
+                setLatestBatch(null);
+            }
+        })();
+    }, [flow]);
+
     // ── Auth ─────────────────────────────────────────────────────────────────
 
     const canSubmitAuth = email.length > 0 && password.length > 0 && !submitting;
@@ -203,7 +228,7 @@ function App() {
     };
 
     const handleSignOut = async () => {
-        await signOut();
+        await Promise.all([signOut(), clearProfileCache()]);
         stopPoll();
         setProfile(null);
         setDetectResult(null);
@@ -317,7 +342,8 @@ function App() {
         if (!scanResult || pushState === 'pushing') return;
         setPushState('pushing');
         try {
-            await importCardmarket(scanResult);
+            const result = await importCardmarket(scanResult, importMode);
+            setImportResult(result);
             setPushState('pushed');
         } catch (err) {
             console.error('Push failed:', err);
@@ -330,6 +356,9 @@ function App() {
         setScanResult(null);
         setScanSavedAt(null);
         setPushState('idle');
+        setImportMode('SYNC');
+        setImportResult(null);
+        setLatestBatch('loading');
         setFlow('detect');
     };
 
@@ -409,6 +438,9 @@ function App() {
                     onScanAgain={handleScanAgain}
                     articleCount={scanResult?.length ?? 0}
                     pushState={pushState}
+                    mode={importMode}
+                    onModeChange={setImportMode}
+                    latestBatch={latestBatch}
                 />
             );
         }
@@ -442,7 +474,7 @@ function App() {
                     <StateScanning progress={scanProgress} startTime={scanStartTime} rateLimitSeconds={rateLimitSeconds} />
                 )}
                 {flow === 'complete' && (
-                    <StateComplete articles={scanResult ?? []} elapsedSeconds={scanElapsed} savedAt={scanSavedAt} />
+                    <StateComplete articles={scanResult ?? []} elapsedSeconds={scanElapsed} savedAt={scanSavedAt} importResult={importResult} />
                 )}
             </div>
         </PopupShell>
